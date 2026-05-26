@@ -198,6 +198,38 @@
             gap: 1.25rem;
         }
 
+        /* --- ADMIN ACTIONS (EXPORT/IMPORT) --- */
+        .admin-actions {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 0.75rem;
+            z-index: 100;
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-surface);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-orange);
+            color: var(--text-light);
+            background-color: var(--bg-base);
+        }
+
         /* --- SNIPPET CARD COMPONENT STYLES --- */
         .snippet-card {
             background-color: var(--bg-surface);
@@ -354,6 +386,17 @@
         </main>
     </div>
 
+    <!-- Floating Admin Actions -->
+    <div class="admin-actions">
+        <button id="exportBtn" class="btn-secondary">
+            <i class="fa-solid fa-download"></i> Export Data
+        </button>
+        <button id="importBtn" class="btn-secondary">
+            <i class="fa-solid fa-file-import"></i> Import Data
+        </button>
+        <input type="file" id="importFile" accept=".json" style="display: none;">
+    </div>
+
     <!-- LOGIC ENGINE -->
     <script>
         // 1. Inisialisasi State & DOM Elements
@@ -470,6 +513,54 @@
                 s.category.toLowerCase().includes(term)
             );
             renderSnippets(filtered);
+        });
+
+        // 6. Backup & Restore (Export/Import)
+        const exportBtn = document.getElementById('exportBtn');
+        const importBtn = document.getElementById('importBtn');
+        const importFile = document.getElementById('importFile');
+
+        exportBtn.addEventListener('click', () => {
+            if (snippets.length === 0) {
+                alert("Tidak ada data untuk diekspor.");
+                return;
+            }
+            const dataStr = JSON.stringify(snippets, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `snippet-vault-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        });
+
+        importBtn.addEventListener('click', () => importFile.click());
+
+        importFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const importedData = JSON.parse(event.target.result);
+                    if (Array.isArray(importedData)) {
+                        if (confirm(`Peringatan: Impor ini akan menggantikan seluruh koleksi Anda dengan ${importedData.length} snippet baru. Lanjutkan?`)) {
+                            snippets = importedData;
+                            saveToStorage();
+                            renderSnippets();
+                            alert("Data berhasil dipulihkan!");
+                        }
+                    } else {
+                        alert("Format file tidak valid. Pastikan file berupa array JSON.");
+                    }
+                } catch (err) {
+                    alert("Gagal membaca file: File rusak atau bukan format JSON.");
+                }
+                importFile.value = ''; // Reset input agar bisa pilih file yang sama lagi
+            };
+            reader.readAsText(file);
         });
 
         // Initial Load
