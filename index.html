@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snippet Vault</title>
+    <!-- FontAwesome CDN untuk Ikon (Sesuai Spesifikasi PRD) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- CSS VARIABLES & THEME --- */
+        :root {
+            /* Warna Utama Sesuai Kebutuhan */
+            --bg-base: #0f172a;        /* Gelap abu-abu kebiruan */
+            --bg-surface: #1e293b;     /* Sedikit lebih terang untuk elemen di atas base */
+            --text-light: #f8fafc;     /* Teks terang */
+            --text-muted: #94a3b8;     /* Teks sekunder/abu-abu */
+            --accent-orange: #f97316;  /* Aksen oranye */
+            --accent-hover: #ea580c;   /* Oranye gelap untuk efek hover */
+            --border-color: #334155;   /* Warna garis batas tepi */
+            
+            /* Ukuran & Efek Transisi */
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --transition: all 0.2s ease-in-out;
+        }
+
+        /* --- RESET & GLOBAL STYLES --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-light);
+            line-height: 1.5;
+            padding: 2rem;
+        }
+
+        .app-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* --- HEADER & SEARCH AREA --- */
+        .app-header {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 2rem;
+        }
+
+        .app-title {
+            font-size: 2.2rem;
+            color: var(--accent-orange);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+        }
+
+        .search-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            background-color: var(--bg-surface);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            color: var(--text-light);
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-orange);
+            box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.15);
+        }
+
+        /* --- MAIN LAYOUT (CSS GRID) --- */
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        /* Responsivitas - Ubah jadi 1 kolom di layar kecil */
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- LEFT COLUMN: FORM SECTION --- */
+        .form-panel {
+            background-color: var(--bg-surface);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .form-panel h2 {
+            margin-bottom: 1.2rem;
+            font-size: 1.25rem;
+            color: var(--text-light);
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .form-control {
+            background-color: var(--bg-base);
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-orange);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 150px;
+            font-family: 'Courier New', Courier, monospace; /* Tampilan kode */
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: var(--accent-orange);
+            color: #fff;
+            border: none;
+            padding: 0.85rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .btn-submit:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* --- RIGHT COLUMN: LIST SECTION --- */
+        .list-panel h2 {
+            margin-bottom: 1.2rem;
+            font-size: 1.25rem;
+            color: var(--text-muted);
+        }
+
+        .snippets-grid {
+            display: grid;
+            /* Grid untuk merender kartu-kartu secara responsif */
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.25rem;
+        }
+
+        /* --- SNIPPET CARD COMPONENT STYLES --- */
+        .snippet-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            transition: var(--transition);
+        }
+
+        .snippet-card:hover {
+            border-color: var(--accent-orange);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .snippet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .snippet-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-light);
+            word-break: break-word;
+        }
+
+        .snippet-category {
+            background-color: var(--bg-base);
+            color: var(--accent-orange);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .snippet-body {
+            background-color: var(--bg-base);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        .snippet-code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            white-space: pre-wrap; /* Menjaga format baris */
+        }
+
+        .snippet-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: auto;
+        }
+
+        .btn-action {
+            background-color: var(--bg-base);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            border-radius: var(--radius-md);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-action:hover {
+            color: var(--text-light);
+            border-color: var(--text-muted);
+        }
+
+        .btn-action.copy:hover {
+            color: var(--accent-orange);
+            border-color: var(--accent-orange);
+        }
+
+        .btn-action.delete:hover {
+            color: #ef4444;
+            border-color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- HEADER & SEARCH BAR -->
+        <header class="app-header">
+            <h1 class="app-title">
+                <i class="fa-solid fa-vault"></i> Snippet Vault
+            </h1>
+            <div class="search-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="Cari snippet berdasarkan judul atau kategori..." autocomplete="off">
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT: 2 COLUMNS -->
+        <main class="main-content">
+            
+            <!-- KIRI: FORM INPUT -->
+            <aside class="form-panel">
+                <h2>Tambah Snippet Baru</h2>
+                <form id="snippetForm">
+                    <div class="form-group">
+                        <label for="title">Judul Snippet</label>
+                        <input type="text" id="title" class="form-control" required placeholder="Contoh: Flexbox Centering">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="category">Kategori</label>
+                        <select id="category" class="form-control" required>
+                            <option value="" disabled selected>-- Pilih Kategori --</option>
+                            <option value="Prompt">Prompt</option>
+                            <option value="HTML">HTML</option>
+                            <option value="CSS">CSS</option>
+                            <option value="JS">JS</option>
+                            <option value="SQL">SQL</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="codeContent">Isi Kode / Prompt</label>
+                        <textarea id="codeContent" class="form-control" required placeholder="Tempel kode atau prompt di sini..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">
+                        <i class="fa-solid fa-floppy-disk"></i> Simpan Snippet
+                    </button>
+                </form>
+            </aside>
+
+            <!-- KANAN: RENDER KARTU -->
+            <section class="list-panel">
+                <h2>Koleksi Tersimpan</h2>
+                <div class="snippets-grid" id="snippetsContainer">
+                    <!-- Elemen kartu dari JS akan muncul di sini -->
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- LOGIC ENGINE -->
+    <script>
+        // 1. Inisialisasi State & DOM Elements
+        const snippetForm = document.getElementById('snippetForm');
+        const searchInput = document.getElementById('searchInput');
+        const snippetsContainer = document.getElementById('snippetsContainer');
+        let snippets = JSON.parse(localStorage.getItem('my_snippets')) || [];
+
+        // Helper: Escaping HTML untuk mencegah XSS
+        const escapeHTML = (str) => {
+            const p = document.createElement('p');
+            p.textContent = str;
+            return p.innerHTML;
+        };
+
+        // 2. Fungsi Sinkronisasi Storage
+        const saveToStorage = () => {
+            localStorage.setItem('my_snippets', JSON.stringify(snippets));
+        };
+
+        // 3. Fungsi Fitur Utama (Copy & Delete)
+        const copyToClipboard = (id, btn) => {
+            const snippet = snippets.find(s => s.id === id);
+            if (snippet) {
+                navigator.clipboard.writeText(snippet.codeContent).then(() => {
+                    // Feedback Visual
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
+                    btn.classList.add('active');
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalHTML;
+                        btn.classList.remove('active');
+                    }, 1500);
+                }).catch(err => {
+                    console.error('Gagal menyalin teks: ', err);
+                });
+            }
+        };
+
+        const deleteSnippet = (id) => {
+            if (confirm("Yakin mau hapus snippet ini?")) {
+                snippets = snippets.filter(s => s.id !== id);
+                saveToStorage();
+                
+                // Re-render berdasarkan input pencarian yang ada sekarang
+                const term = searchInput.value.toLowerCase();
+                const filtered = snippets.filter(s => s.title.toLowerCase().includes(term) || s.category.toLowerCase().includes(term));
+                renderSnippets(filtered);
+            }
+        };
+
+        // 4. Fungsi Render Snippets
+        const renderSnippets = (dataToRender = snippets) => {
+            snippetsContainer.innerHTML = '';
+
+            if (dataToRender.length === 0) {
+                snippetsContainer.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted);">
+                        <i class="fa-solid fa-folder-open" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                        <p>Belum ada snippet tersimpan. Mulai buat koleksimu!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Render dari yang terbaru (reverse order)
+            [...dataToRender].reverse().forEach(snippet => {
+                const card = document.createElement('div');
+                card.className = 'snippet-card';
+                card.innerHTML = `
+                    <div class="snippet-header">
+                        <h3 class="snippet-title">${escapeHTML(snippet.title)}</h3>
+                        <span class="snippet-category">${snippet.category}</span>
+                    </div>
+                    <div class="snippet-body">
+                        <pre class="snippet-code"><code>${escapeHTML(snippet.codeContent)}</code></pre>
+                    </div>
+                    <div class="snippet-actions">
+                        <button class="btn-action copy" onclick="copyToClipboard(${snippet.id}, this)">
+                            <i class="fa-regular fa-copy"></i> Copy
+                        </button>
+                        <button class="btn-action delete" onclick="deleteSnippet(${snippet.id})">
+                            <i class="fa-solid fa-trash"></i> Hapus
+                        </button>
+                    </div>
+                `;
+                snippetsContainer.appendChild(card);
+            });
+        };
+
+        // 5. Event Listeners
+        snippetForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const newSnippet = {
+                id: Date.now(),
+                title: document.getElementById('title').value,
+                category: document.getElementById('category').value,
+                codeContent: document.getElementById('codeContent').value
+            };
+
+            snippets.push(newSnippet);
+            saveToStorage();
+            renderSnippets();
+            snippetForm.reset();
+        });
+
+        // Pencarian Real-time
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = snippets.filter(s => 
+                s.title.toLowerCase().includes(term) || 
+                s.category.toLowerCase().includes(term)
+            );
+            renderSnippets(filtered);
+        });
+
+        // Initial Load
+        renderSnippets();
+    </script>
+</body>
+</html>
